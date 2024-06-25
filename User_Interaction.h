@@ -9,13 +9,20 @@
 #include <iostream>
 #include <string>
 #include <stdlib.h>
+#include <sstream>
+#include <vector>
 
-#include "Tower.h"
+#include <mutex>
+#include <condition_variable>
 
 
-namespace visual {
-	
+
+namespace view {
+	/** ***************************************** Start *****************************************
+	* @brief : Start and display a visual representation in the console for the user.
+	*
+	*/
 	void StartProgram();
 
-} // namespace visual
+} // namespace view
 
