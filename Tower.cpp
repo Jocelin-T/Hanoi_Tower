@@ -7,32 +7,88 @@
  *********************************************************************/
 #include "Tower.h"
 
-Tower::Tower(const int tower_height){
-	for (int i = tower_height; i > 0; i--) {
-		m_tower_stack.push_back(i);
+namespace logic {
+	
+	Tower::Tower(const std::string& tower_name)
+	: m_tower_name{ tower_name }
+	{}
+
+	// {3,2,1}
+	Tower::Tower(const std::string& tower_name, const int tower_height)
+	: m_tower_name{ tower_name }
+	{
+		for (int i = tower_height; i > 0; i--) {
+			m_tower_stack.push_back(i);
+		}
 	}
-}
 
-bool Tower::IsTowerEmpty(){
+	// Get the name of the tower
+	std::string Tower::GetTowerName() const {
+		return m_tower_name;
+	}
 
-	return false;
-}
+	// Check if the vector is empty
+	bool Tower::IsTowerEmpty() const {
+		return m_tower_stack.empty();
+	}
 
-int Tower::GetTowerSize(){
-	return m_tower_stack.size();
-}
+	// Get a pointer of the vector of this Tower
+	std::vector<int>* Tower::GetTowerStack() const {
+		return const_cast<std::vector<int>*>(&m_tower_stack);
+	}
 
-int Tower::GetFirstElement(){
+	// Get the size of the vector
+	int Tower::GetTowerSize() const	{
+		return m_tower_stack.size();
+	}
 
-	return 0;
-}
+	// Get the value at the given index
+	int Tower::GetTowerFloor(const int floor) const {
+		if (floor < 0 || floor >= m_tower_stack.size() || IsTowerEmpty()) {
+			return 0;
+		}
+		return m_tower_stack[floor];
+	}
 
-int Tower::GetLastElement(){
+	// Get the value of the last element of the vector
+	int Tower::GetBottomElement() const {
+		if (!IsTowerEmpty()) {
+			return m_tower_stack.front();
+		}
+		return 0;
+	}
 
-	return 0;
-}
+	// Get the value of the 1st element of the vector
+	int Tower::GetTopElement() const {
+		if (!IsTowerEmpty()) {
+			return m_tower_stack.back();
+		}
+		return 0;
+	}
 
-bool Tower::CheckTowerStability(){
+	// Check if the tower is stable, the next value NEED to always be lower
+	bool Tower::IsTowerStable() const {
+		if (GetTowerSize() > 2) {
+			int last_element{ m_tower_stack[0] };
+			for (int i = 1; i < GetTowerSize(); i++) {
+				if (i > last_element) {
+					return false;
+				}
+				last_element = i;
+			}
+		}
+		return true;
+	}
 
-	return false;
-}
+	// Add an value at the back of the vector
+	void Tower::AddTopElement(const int value) {
+		m_tower_stack.push_back(value);
+	}
+
+	// Remove the last value of the vector
+	void Tower::RemoveTopElement() {
+		if (!IsTowerEmpty()) {
+			m_tower_stack.pop_back();
+		}
+	}
+} // namespace logic

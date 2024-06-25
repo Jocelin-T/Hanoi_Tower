@@ -22,7 +22,7 @@
 
 int main(){
 
-    visual::StartProgram();
+    view::StartProgram();
 
     return 0;
 }

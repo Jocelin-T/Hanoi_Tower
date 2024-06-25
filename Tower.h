@@ -7,30 +7,104 @@
  *********************************************************************/
 #pragma once
 #include <iostream>
-#include <stack> // push pop
 #include <vector>
 
+namespace logic {
+	class Tower{
+	public:
+		// Constructor
+		Tower() = default;
+		Tower(const std::string& tower_name);
+		Tower(const std::string& tower_name, const int tower_height);
 
-class Tower{
-public:
-	// Default Tower Constructor
-	Tower() = default;
+		// Tower data
+		/** ***************************************** Tower Name *****************************************
+		 * @brief : Get the name of the tower.
+		 * 
+		 * @return  : std::string
+		 */
+		std::string GetTowerName() const;
 
-	// First Tower Constructor
-	Tower(const int tower_height);
+		/** ***************************************** Is Tower empty *****************************************
+		 * @brief : Check if the vector is empty.
+		 * 
+		 * @return  : boolean
+		 */
+		bool IsTowerEmpty() const;
 
-	bool IsTowerEmpty();
+		/** ***************************************** Get full Tower *****************************************
+		 * @brief : Get a pointer of the vector of this Tower.
+		 * 
+		 * @return  : std::vector<int>*
+		 */
+		std::vector<int>* GetTowerStack() const;
 
-	int GetTowerSize();
+		/** ***************************************** Tower size *****************************************
+		 * @brief : Get the size of the vector.
+		 * 
+		 * @return  : int
+		 */
+		int GetTowerSize() const;
 
-	int GetFirstElement();
+		/** ***************************************** Get Floor *****************************************
+		 * @brief : Get the value at the given index.
+		 * 
+		 * @param floor : int => bottom of the tower is index [0]
+		 * @return  : int => valueat this index
+		 */
+		int GetTowerFloor(const int floor) const;
 
-	int GetLastElement();
+		/** ***************************************** Get Top Tower *****************************************
+		 * @brief : Get the value of the last element of the vector.
+		 * 
+		 * @return  : int
+		 */
+		int GetTopElement() const;
 
-private:
-	std::vector<int> m_tower_stack;
+		/** ***************************************** Get Bottom Tower *****************************************
+		 * @brief : Get the value of the 1st element of the vector.
+		 * 
+		 * @return  : int
+		 */
+		int GetBottomElement() const;
 
-	bool CheckTowerStability();
+		/** ***************************************** Tower stability *****************************************
+		 * @brief : Check if the tower is stable, the next value NEED to always be lower.
+		 *
+		 * @return  : boolean
+		 */
+		bool IsTowerStable() const;
 
-};
+
+		// Tower modification
+		/** ***************************************** Add *****************************************
+		 * @brief : Add an value at the back of the vector.
+		 * 
+		 * @param value : int => value to add
+		 */
+		void AddTopElement(const int value);
+
+		/** ***************************************** Remove *****************************************
+		 * @brief : Remove the last value of the vector.
+		 * 
+		 */
+		void RemoveTopElement();
+
+
+		//// Debug
+		//void DisplayVector() {
+		//	if (!IsTowerEmpty()) {
+		//		for (int floor : m_tower_stack) {
+		//			std::cout << m_tower_name << ": " << floor << "\n";
+		//		}
+		//	}
+		//}
+
+	private:
+		std::string m_tower_name{ "Tower" };
+		// The vector 
+		std::vector<int> m_tower_stack;
+
+	};
+} // namespace logic
 
