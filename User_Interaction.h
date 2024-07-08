@@ -11,11 +11,7 @@
 #include <stdlib.h>
 #include <sstream>
 #include <vector>
-
-#include <mutex>
-#include <condition_variable>
-
-
+#include <limits>
 
 namespace view {
 	/** ***************************************** Start *****************************************
@@ -25,4 +21,19 @@ namespace view {
 	void StartProgram();
 
 } // namespace view
+
+
+/////////// ************** TO DO ************** ///////////
+
+// -> complete else statment in AlgorithmCheckNextPhase() function
+// -> movement of the elements (1) and (2)
+// xx check the differences between odd and even integer
+// -> if lowest top element is ODD => take "last last" move of elements (1) and (2)
+// -> if lowest top element is EVEN => take "last" move of elements (1) and (2)
+
+
+// Order for ODD of the Elements (1) and (2): T1 -> T2 -> T3 --> T1...
+// Order for EVEN of the Elements (1) and (2): T1 -> T3 -> T2 --> T1...
+
+
 

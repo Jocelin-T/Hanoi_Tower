@@ -22,14 +22,14 @@ namespace logic {
 	inline int first_tower_height{ 0 };
 	inline std::string general_algo_message{ "" };
 	inline std::string general_error_message{ "" };
-
 	inline bool algorithm_done{ false };
+
 
 	// Struct of static_array, because can't make vector of static_array,
 	//	but can make a vector of struct holding a static_array
 	struct TowersStep {
 		Tower m_array_towers[NBR_TOWER];
-		std::string step_message{ "" };
+		std::string m_step_message{ "" };
 		TowersStep(const Tower array_tower[]);
 	};
 
@@ -43,12 +43,12 @@ namespace logic {
 	* @param value_t2 : int => Height of the 2nd Tower, default is {0}
 	* @param value_t3 : int => Height of the 3th Tower, default is {0}
 	*/
-	void SetUpTowers(int value_t1, int value_t2 = 0, int value_t3 = 0);
+	void SetUpTowers(const int value_t1, const int value_t2 = 0, const int value_t3 = 0);
 
 	/** ***************************************** Algorithm *****************************************
 	 * @brief : Algorithm for the Hanoi Towers.
 	 *
 	 */
-	void AlgorithmRunning();
+	void AlgorithmStart();
 
 } // namespace logic

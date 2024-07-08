@@ -32,6 +32,18 @@ namespace logic {
 		return m_tower_stack.empty();
 	}
 
+	// Check if the given value is present in the tower
+	bool Tower::IsElementPresentInTower(const int value) const {
+		if (!IsTowerEmpty()) {
+			for (int tower_value : m_tower_stack) {
+				if (tower_value == value) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	// Get a pointer of the vector of this Tower
 	std::vector<int>* Tower::GetTowerStack() const {
 		return const_cast<std::vector<int>*>(&m_tower_stack);
@@ -68,13 +80,17 @@ namespace logic {
 
 	// Check if the tower is stable, the next value NEED to always be lower
 	bool Tower::IsTowerStable() const {
-		if (GetTowerSize() > 2) {
-			int last_element{ m_tower_stack[0] };
-			for (int i = 1; i < GetTowerSize(); i++) {
-				if (i > last_element) {
+		if (GetTowerSize() > 1) {
+			//std::cout << "call: "<< GetTowerName() << "\n"; // DEBUG
+			for (int i = 0; i < GetTowerSize(); i++) {
+				int previous_floor = GetTowerFloor(i);
+				int current_floor = GetTowerFloor(i + 1);
+
+				//std::cout  << " current: " << current_floor << " previous: " << previous_floor << "\n"; // DEBUG
+
+				if (current_floor > previous_floor) {
 					return false;
 				}
-				last_element = i;
 			}
 		}
 		return true;
@@ -90,5 +106,10 @@ namespace logic {
 		if (!IsTowerEmpty()) {
 			m_tower_stack.pop_back();
 		}
+	}
+
+	// Clear the tower
+	void Tower::ClearTower() {
+		m_tower_stack.clear();
 	}
 } // namespace logic
