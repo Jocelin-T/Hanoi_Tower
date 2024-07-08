@@ -27,13 +27,17 @@ namespace view {
 	const char FLOOR_VOID{ '.' };
 	const char FLOOR_CORRECT{ '|' };
 	const char FLOOR_BROKEN{ '/' };
-	bool auto_step{ false };
-	int current_step{ 0 };
 	const int MIN_STEP{ 0 };
-	int max_step{ 1 }; // bug maybe ?
+	bool auto_step{ false };
+	int current_step{ MIN_STEP };
+	int max_step{ 1 };
+
+	bool debug_mod{ false }; // DEBUG
+	int debug_mod_value{ 5 }; // DEBUG
 
 
 	// Function declaration
+	void ResetProgram();
 	void FirstTowerHigh();
 	void DisplayAllTowers(int step);
 	void DisplayNextStep();
@@ -54,7 +58,7 @@ namespace view {
 		FirstTowerHigh();
 
 		// Launch the Algo
-		logic::AlgorithmRunning();
+		logic::AlgorithmStart();
 
 		//Set of the max step
 		if (vec_steps.size() > max_step) {
@@ -65,6 +69,14 @@ namespace view {
 		DisplayAllTowers(0);
 	}
 
+	// Reset all global variables
+	void ResetProgram()	{
+		debug_mod = false;
+		auto_step = false;
+		current_step = MIN_STEP;
+		max_step = 1;
+	}
+
 	/** ***************************************** Setup of Towers *****************************************
 	 * @brief : Ask the user the size of the first Tower
 	 *	Set the 2 others Tower objects as empty.
@@ -73,15 +85,29 @@ namespace view {
 	void FirstTowerHigh() {
 		ClearDisplay();
 		// Ask the user the height of the first tower he want
-		std::cout << "Choose the height of the first tower (" << MIN_TOWER_HIGH << " - "  << MAX_TOWER_HIGH << "): ";
-		std::cin >> first_tower_height;
-		if (first_tower_height < MIN_TOWER_HIGH) {
+		std::cout << "Choose the height of the first tower (" << MIN_TOWER_HIGH << " - " << MAX_TOWER_HIGH
+			<< ")\nor 0 for debug mod: ";
+
+		// Check if the user entry is numeric
+		while (!(std::cin >> first_tower_height)) {
+			std::cout << "Invalid entry, choose a number: ";
+			std::cin.clear(); // Clear the flag 
+			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		}
+
+		// Change the height in case the user choice is to low or too high
+		if (first_tower_height == 0) { // DEBUG
+			debug_mod = true;
+			first_tower_height = debug_mod_value;
+		}
+		else if (first_tower_height < MIN_TOWER_HIGH) {
 			first_tower_height = MIN_TOWER_HIGH;
 		}
-		if (first_tower_height > MAX_TOWER_HIGH) {
+		else if (first_tower_height > MAX_TOWER_HIGH) {
 			first_tower_height = MAX_TOWER_HIGH;
 		}
 
+		// Set the towers
 		logic::SetUpTowers(first_tower_height);
 	}
 
@@ -93,12 +119,14 @@ namespace view {
 	 */
 	void DisplayAllTowers(int step) {
 		// Clear the console
-		ClearDisplay();
+		if (!debug_mod) {
+			ClearDisplay();
+		}
 		 
 		TowersStep& towers_step = vec_steps[step];
 
 		// Message of the step
-		std::cout << "\t\t\t" << towers_step.step_message << "\n";
+		std::cout << "\t\t\t" << towers_step.m_step_message << "\n";
 
 		// Initialize the 2D array with 0
 		int array_towers[MAX_TOWER_HIGH][NBR_TOWER] = { 0 };
@@ -117,7 +145,6 @@ namespace view {
 			}
 			current_tower++;
 		}
-
 
 		// Display DEBUG array
 		DisplayDataTowers(array_towers);
@@ -210,9 +237,10 @@ namespace view {
 	void WaitForUserCommand() {
 		std::cout << "Algo: " << general_algo_message << "\n";
 		std::cout << "Error: " << general_error_message << "\n";
-		std::cout << "Press the [space bar] to trigger auto-mode\n"
-			<< "or\nPress [a] to move to the previous step\n"
-			<< "Press [d] to move to the next step" << std::endl;
+		std::cout << "Press [space bar] to trigger auto-mode\n"
+			<< "Press [d] to move to the next step\n" 
+			<< "Press [a] to move to the previous step\n"
+			<< "Press [r] to restart" << std::endl;
 
 		while (true) {
 			if (_kbhit()) {  // Check if a key has been pressed
@@ -222,13 +250,17 @@ namespace view {
 					auto_step = true;
 					break;
 				}
-				if (ch == 'a') {
+				if (ch == 'a' && current_step > MIN_STEP) {
 					DisplayPreviousStep();
 					break;
 				}
-				if (ch == 'd') {
+				if (ch == 'd' && current_step < max_step) {
 					DisplayNextStep();
 					break;
+				}
+				if (ch == 'r') {
+					ResetProgram();
+					StartProgram();
 				}
 			}
 		}

@@ -32,6 +32,14 @@ namespace logic {
 		 */
 		bool IsTowerEmpty() const;
 
+		/** ***************************************** TO DO *****************************************
+		 * @brief : Check if the given value is present in the tower.
+		 *
+		 * @param value : int => value to find
+		 * @return  : boolean
+		 */
+		bool IsElementPresentInTower(const int value) const;
+
 		/** ***************************************** Get full Tower *****************************************
 		 * @brief : Get a pointer of the vector of this Tower.
 		 * 
@@ -90,8 +98,13 @@ namespace logic {
 		 */
 		void RemoveTopElement();
 
+		/** ***************************************** Clear *****************************************
+		 * @brief : Clear the tower.
+		 * 
+		 */
+		void ClearTower();
 
-		//// Debug
+		//// DEBUG
 		//void DisplayVector() {
 		//	if (!IsTowerEmpty()) {
 		//		for (int floor : m_tower_stack) {
@@ -102,9 +115,7 @@ namespace logic {
 
 	private:
 		std::string m_tower_name{ "Tower" };
-		// The vector 
 		std::vector<int> m_tower_stack;
-
 	};
 } // namespace logic
 
