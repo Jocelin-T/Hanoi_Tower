@@ -11,7 +11,7 @@
 namespace logic {
 	// Global variable
 	const int START_STEP{ 1 };
-	const int MAX_STEP{ 200 };
+	const int MAX_STEP{ 1000 };
 	const std::string TOWER_1_NAME{ "t1" };
 	const std::string TOWER_2_NAME{ "t2" };
 	const std::string TOWER_3_NAME{ "t3" };
@@ -62,6 +62,7 @@ namespace logic {
 	Tower* p_tower_b = nullptr;
 	Tower* p_tower_c = nullptr;
 
+
 	// Set up the 3 towers.
 	void SetUpTowers(const int value_t1, const int value_t2, const int value_t3) {
 		ResetAlgorithm();
@@ -91,6 +92,12 @@ namespace logic {
 		t1.ClearTower();
 		t2.ClearTower();
 		t3.ClearTower();
+
+		p_last_move_elements_1_2 = nullptr;
+		p_before_last_move_elements_1_2 = nullptr;
+
+		p_tower_b = nullptr;
+		p_tower_c = nullptr;
 	}
 
 
@@ -138,7 +145,7 @@ namespace logic {
 
 	// In case all floors are set on T3 but the 2 last, will find them and move them
 	void FinalAlgorithmPhase() {
-		std::cout << "FinalAlgorithmPhase\n"; // DEBUG
+		std::cout << "FinalAlgorithmPhase ()\n"; // DEBUG
 
 		Tower& tower_elem_1 = FindElement(1);
 		Tower& tower_elem_2 = FindElement(2);
@@ -161,7 +168,7 @@ namespace logic {
 	// Move a value from a tower to another tower
 	void MoveFloorToTower(Tower& from_tower, Tower& to_tower, bool ignore_phase_check) {
 
-		std::cout << "MoveFloorToTower(" 
+		std::cout << "MoveFloorToTower (" 
 			<< "from_tower: " << from_tower.GetTowerName()
 			<< " to_tower: " << to_tower.GetTowerName() 
 			<< " ignore: " << ignore_phase_check << ")\n"; // DEBUG
@@ -202,6 +209,7 @@ namespace logic {
 
 			std::cout << "move done from_tower: " << from_tower.GetTowerName()
 				<< " to_tower: " << to_tower.GetTowerName() << "\n";
+
 
 			// Check for the next phase
 			if (!ignore_phase_check) {
@@ -248,12 +256,14 @@ namespace logic {
 		
 		// Don't ignore the next phase to find which element need to be moved
 		MoveFloorToTower(other_tower, to_tower);
+
+
 	}
 
 
 	// Move the elements (1) and (2) to the next phase
 	void LoopElements1And2() {
-		std::cout << "LoopElements1And2\n"; // DEBUG
+		std::cout << "LoopElements1And2 ()\n"; // DEBUG
 
 		// Order for ODD of the Elements (1) and (2): T1 -> T2 -> T3 --> T1...
 		// Order for EVEN of the Elements (1) and (2): T1 -> T3 -> T2 --> T1...
@@ -326,7 +336,7 @@ namespace logic {
 
 	// Check what need to be the next phase of the algorithm
 	void AlgorithmCheckNextPhase() {
-		std::cout << "AlgorithmCheckNextPhase\n"; // DEBUG
+		std::cout << "AlgorithmCheckNextPhase ()\n"; // DEBUG
 
 		if (!final_phase_start && !algorithm_done) {
 
@@ -350,6 +360,7 @@ namespace logic {
 					MoveFloorToTower(tower_lowest_top_element, *p_before_last_move_elements_1_2, true);
 					std::cout << "---------------\n";
 					LoopElements1And2();
+
 				}
 				// EVEN
 				else {
@@ -357,6 +368,7 @@ namespace logic {
 					std::cout << "---------------\n";
 					LoopElements1And2();
 				}
+
 			}
 		}
 	}
@@ -395,25 +407,29 @@ namespace logic {
 	// Find the Tower with the lowest element at is top, EXCLUDING (1) and (2)
 	Tower& FindTowerWithLowestElementAtTop() {
 
-		std::cout << "FindTowerWithLowestElementAtTop\n"; // DEBUG
-
 		int min_element{ first_tower_height };
-		Tower& min_tower{ t1 };
+		Tower* min_tower = nullptr; // Pointer to the Tower with the lowest element
 
-		for (const Tower& current_tower : array_obj_towers) {
+		for (Tower& current_tower : array_obj_towers) {
 			if (!current_tower.IsTowerEmpty()) {
 				int current_element = current_tower.GetTopElement();
 
-				if (current_element < min_element
+				if (current_element <= min_element 
 					&& current_element != 1
 					&& current_element != 2) {
+
 					min_element = current_element;
-					min_tower = current_tower;
+					min_tower = &current_tower; // Assign the pointer
 				}
 			}
 		}
-		std::cout << min_tower.GetTowerName() << " contain lowest element (" << min_element << ")\n";
-		return min_tower;
+
+		// If no valid tower was found, handle the case appropriately
+		if (min_tower == nullptr) {
+			throw std::runtime_error("No valid tower found with the lowest element.");
+		}
+
+		return *min_tower; // Dereference the pointer to return the Tower reference
 	}
 
 
