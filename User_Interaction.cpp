@@ -33,7 +33,7 @@ namespace view {
 	int max_step{ 1 };
 
 	bool debug_mod{ false }; // DEBUG
-	int debug_mod_value{ 5 }; // DEBUG
+	int debug_mod_value{ 6 }; // DEBUG
 
 
 	// Function declaration
