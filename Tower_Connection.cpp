@@ -11,7 +11,7 @@
 namespace logic {
 	// Global variable
 	const int START_STEP{ 1 };
-	const int MAX_STEP{ 1000 };
+	const int MAX_STEP{ 1500 };
 	const std::string TOWER_1_NAME{ "t1" };
 	const std::string TOWER_2_NAME{ "t2" };
 	const std::string TOWER_3_NAME{ "t3" };
@@ -145,8 +145,6 @@ namespace logic {
 
 	// In case all floors are set on T3 but the 2 last, will find them and move them
 	void FinalAlgorithmPhase() {
-		std::cout << "FinalAlgorithmPhase ()\n"; // DEBUG
-
 		Tower& tower_elem_1 = FindElement(1);
 		Tower& tower_elem_2 = FindElement(2);
 
@@ -167,11 +165,6 @@ namespace logic {
 
 	// Move a value from a tower to another tower
 	void MoveFloorToTower(Tower& from_tower, Tower& to_tower, bool ignore_phase_check) {
-
-		std::cout << "MoveFloorToTower (" 
-			<< "from_tower: " << from_tower.GetTowerName()
-			<< " to_tower: " << to_tower.GetTowerName() 
-			<< " ignore: " << ignore_phase_check << ")\n"; // DEBUG
 
 		// Check if the algo is done (probably tower unstable)
 		if (!algorithm_done) {
@@ -207,16 +200,9 @@ namespace logic {
 			// Check if the algo is done
 			AlgorithmCheckStepStatus(to_tower);
 
-			std::cout << "move done from_tower: " << from_tower.GetTowerName()
-				<< " to_tower: " << to_tower.GetTowerName() << "\n";
-
-
 			// Check for the next phase
 			if (!ignore_phase_check) {
 				AlgorithmCheckNextPhase();
-			}
-			else { // DEBUG
-				std::cout << "phase ignored at step_" << nbr_step - 1 << "\n";
 			}
 		}
 	}
@@ -224,9 +210,6 @@ namespace logic {
 
 	// Move the Elements (1) and (2) from a Tower to another Tower
 	void MoveElements1And2To(Tower& from_tower, Tower& to_tower) {
-		std::cout << "MoveElements1And2To (" 
-			<< "from_tower: " << from_tower.GetTowerName()
-			<< " to_tower: " << to_tower.GetTowerName() << ")\n";
 
 		// Set the last movement
 		p_before_last_move_elements_1_2 = p_last_move_elements_1_2;
@@ -238,37 +221,23 @@ namespace logic {
 			return;
 		}
 
-		std::cout << "last: " << p_last_move_elements_1_2->GetTowerName()
-			<< " before_last: " << p_before_last_move_elements_1_2->GetTowerName() << "\n";
-
 		// Determine the other_tower
 		Tower& other_tower = GetOtherTower(from_tower, to_tower);
 
-		std::cout << "from_tower: " << from_tower.GetTowerName()
-			<< " to_tower: " << to_tower.GetTowerName()
-			<< " other_tower: " << other_tower.GetTowerName() << "\n";
-
 		// Prepare the phase for the next call
 		elements_1_2_phase++;
-		std::cout << "prepare for next phase :" << elements_1_2_phase << "\n";
 		MoveFloorToTower(from_tower, other_tower, true);
 		MoveFloorToTower(from_tower, to_tower, true);
 		
 		// Don't ignore the next phase to find which element need to be moved
 		MoveFloorToTower(other_tower, to_tower);
-
-
 	}
 
 
 	// Move the elements (1) and (2) to the next phase
 	void LoopElements1And2() {
-		std::cout << "LoopElements1And2 ()\n"; // DEBUG
-
 		// Order for ODD of the Elements (1) and (2): T1 -> T2 -> T3 --> T1...
 		// Order for EVEN of the Elements (1) and (2): T1 -> T3 -> T2 --> T1...
-
-		std::cout << "initial tower_a: " << tower_a.GetTowerName() << "\n";
 
 		// Set the Towers b and c for odd or even number
 		if (!p_tower_b && !p_tower_c) {
@@ -276,20 +245,17 @@ namespace logic {
 			if (!algorithm_is_even) {
 				p_tower_b = &t2;
 				p_tower_c = &t3;
-				std::cout << "is odd\n";
 			}
 			// if EVEN
 			else {
 				p_tower_b = &t3;
 				p_tower_c = &t2;
-				std::cout << "is even\n";
 			}
 		}
 
 		// Reset the phase to 1 when too high
 		if (elements_1_2_phase > NBR_TOWER) {
 			elements_1_2_phase = 1;
-			std::cout << "phase reset to 1\n";
 		}
 
 		// Check if pointers are valid
@@ -298,27 +264,20 @@ namespace logic {
 			return;
 		}
 
-		std::cout << "loop tower_a: " << tower_a.GetTowerName() << " at: " << &tower_a
-			<< "\n p_tower_b: " << p_tower_b->GetTowerName() << " at: " << &p_tower_b
-			<< "\n p_tower_c: " << p_tower_c->GetTowerName() << " at: " << &p_tower_c << "\n";
-
 		// Make the required phase
 		if (elements_1_2_phase == 1) {
-			std::cout << "phase 1\n";
 			MoveElements1And2To(tower_a, *p_tower_b);
 		}
 		else if (elements_1_2_phase == 2) {
-			std::cout << "phase 2\n";
 			MoveElements1And2To(*p_tower_b, *p_tower_c);
 		}
 		else if (elements_1_2_phase == 3) {
-			std::cout << "phase 3\n";
 			MoveElements1And2To(*p_tower_c, tower_a);
 		}
 	}
 
 
-	// Get the non-selected tower
+	// Return the non-selected Tower
 	Tower& GetOtherTower(const Tower& tower_a, const Tower& tower_b) {
 		std::string tower_a_name = tower_a.GetTowerName();
 		std::string tower_b_name = tower_b.GetTowerName();
@@ -336,11 +295,8 @@ namespace logic {
 
 	// Check what need to be the next phase of the algorithm
 	void AlgorithmCheckNextPhase() {
-		std::cout << "AlgorithmCheckNextPhase ()\n"; // DEBUG
 
 		if (!final_phase_start && !algorithm_done) {
-
-			std::cout << "phase NOT ignored at step_" << nbr_step - 1 << "\n";
 
 			// Check if the algorithm can start is final phase
 			if (!t3.IsElementPresentInTower(1)
@@ -357,18 +313,19 @@ namespace logic {
 
 				// ODD
 				if (tower_lowest_top_element.GetTopElement() & 1) {
-					MoveFloorToTower(tower_lowest_top_element, *p_before_last_move_elements_1_2, true);
-					std::cout << "---------------\n";
+					MoveFloorToTower(tower_lowest_top_element,
+						*p_before_last_move_elements_1_2, 
+						true);
 					LoopElements1And2();
 
 				}
 				// EVEN
 				else {
-					MoveFloorToTower(tower_lowest_top_element, *p_last_move_elements_1_2, true);
-					std::cout << "---------------\n";
+					MoveFloorToTower(tower_lowest_top_element,
+						*p_last_move_elements_1_2,
+						true);
 					LoopElements1And2();
 				}
-
 			}
 		}
 	}
@@ -376,8 +333,6 @@ namespace logic {
 
 	// Check if the T3 has break, has the correct result, has too much step
 	void AlgorithmCheckStepStatus(const Tower& to_tower) {
-
-		std::cout << "AlgorithmCheckStepStatus (to_tower: " << to_tower.GetTowerName() << ")\n"; // DEBUG
 
 		// Check if the receiving Tower break
 		if (!to_tower.IsTowerStable()) {
@@ -443,6 +398,5 @@ namespace logic {
 			current_tower++;
 		}
 	}
-
 
 } // namespace logic

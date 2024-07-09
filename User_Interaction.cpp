@@ -7,6 +7,7 @@
  *********************************************************************/
 #include <conio.h>
 
+
 #include "Tower.h"
 #include "Tower_Connection.h"
 #include "User_Interaction.h"
@@ -23,18 +24,20 @@ namespace view {
 	using logic::general_algo_message;
 	using logic::general_error_message;
 
+	using logic::AlgorithmStart;
+	using logic::SetUpTowers;
+
 	// Global variables
 	const char FLOOR_VOID{ '.' };
 	const char FLOOR_CORRECT{ '|' };
-	const char FLOOR_BROKEN{ '/' };
 	const int MIN_STEP{ 0 };
-	bool auto_step{ false };
+	bool auto_mode{ false };
+	long AUTO_MODE_SLEEP{ 100 }; // Milli-second
 	int current_step{ MIN_STEP };
 	int max_step{ 1 };
 
 	bool debug_mod{ false }; // DEBUG
 	int debug_mod_value{ 6 }; // DEBUG
-
 
 	// Function declaration
 	void ResetProgram();
@@ -42,23 +45,22 @@ namespace view {
 	void DisplayAllTowers(int step);
 	void DisplayNextStep();
 	void DisplayPreviousStep();
+	void DisplayAutoMode();
 	void DisplayVisualTowers(int array_towers[MAX_TOWER_HIGH][NBR_TOWER]);
 	void DisplayDataTowers(int array_towers[MAX_TOWER_HIGH][NBR_TOWER]);
 	void ConstructFloor(int size);
 	void WaitForUserCommand();
 	void ClearDisplay();
 
-	/** ***************************************** Start *****************************************
-	 * @brief : Start and display a visual representation in the console for the user.
-	 * 
-	 */
+
+	// Start and display a visual representation in the console for the user.
 	void StartProgram(){
 		
 		// Set the height of the first tower
 		FirstTowerHigh();
 
 		// Launch the Algo
-		logic::AlgorithmStart();
+		AlgorithmStart();
 
 		//Set of the max step
 		if (vec_steps.size() > max_step) {
@@ -69,19 +71,17 @@ namespace view {
 		DisplayAllTowers(0);
 	}
 
+
 	// Reset all global variables
 	void ResetProgram()	{
 		debug_mod = false;
-		auto_step = false;
+		auto_mode = false;
 		current_step = MIN_STEP;
 		max_step = 1;
 	}
 
-	/** ***************************************** Setup of Towers *****************************************
-	 * @brief : Ask the user the size of the first Tower
-	 *	Set the 2 others Tower objects as empty.
-	 * 
-	 */
+
+	// Ask the user the size of the first Tower and set the 2 others Tower objects as empty.
 	void FirstTowerHigh() {
 		ClearDisplay();
 		// Ask the user the height of the first tower he want
@@ -108,21 +108,18 @@ namespace view {
 		}
 
 		// Set the towers
-		logic::SetUpTowers(first_tower_height);
+		SetUpTowers(first_tower_height);
 	}
 
-
 	
-	/** ***************************************** Create 2D Array *****************************************
-	 * @brief : Create an 2D array with all data from the Tower objects.
-	 * 
-	 */
+	// Create a 2D array with all data from the Tower objects and display it
 	void DisplayAllTowers(int step) {
-		// Clear the console
+		// Clear the console if NOT in debug mode
 		if (!debug_mod) {
 			ClearDisplay();
 		}
-		 
+		
+		// Current step
 		TowersStep& towers_step = vec_steps[step];
 
 		// Message of the step
@@ -132,7 +129,7 @@ namespace view {
 		int array_towers[MAX_TOWER_HIGH][NBR_TOWER] = { 0 };
 		std::memset(array_towers, 0, sizeof(array_towers));
 
-		// Populate the 2D array with tower floors
+		// Populate the 2D array with Towers floors
 		int current_tower{ 0 }; // Tower ID
 		for (const Tower& tower : towers_step.m_array_towers) {
 			int tower_size = tower.GetTowerSize();
@@ -152,15 +149,12 @@ namespace view {
 		// Display the 2D array in the desired format
 		DisplayVisualTowers(array_towers);
 
-		// Wait next order
+		// Wait next user input
 		WaitForUserCommand();
 	}
 
-	/** ***************************************** Visual Array *****************************************
-	 * @brief : Display the 2D array with some visual representation.
-	 * 
-	 * @param array_towers :
-	 */
+
+	// Display the 2D array with some visual representation.
 	void DisplayVisualTowers(int array_towers[MAX_TOWER_HIGH][NBR_TOWER]) {
 		for (int i = 0; i < MAX_TOWER_HIGH; i++) {
 			std::cout << "\t\t\t";
@@ -171,11 +165,8 @@ namespace view {
 		}
 	}
 
-	/** ***************************************** Debug Array *****************************************
-	 * @brief : Display the 2D array with number only.
-	 * 
-	 * @param array_towers :
-	 */
+
+	// Display the 2D array with number only.
 	void DisplayDataTowers(int array_towers[MAX_TOWER_HIGH][NBR_TOWER]) {
 		for (int i = 0; i < MAX_TOWER_HIGH; i++) {
 			std::cout << "\t\t\t";
@@ -186,15 +177,11 @@ namespace view {
 		}
 	}
 
-	/** ***************************************** Floor Construction *****************************************
-	 * @brief : Print in console the given floor (*2 for symetric result).
-	 * 
-	 * @param size : int => size of the floor
-	 */
+
+	// Print a floor of 1 Tower, everything is in *2 for symmetry
 	void ConstructFloor(int size) {
 		int dif = (first_tower_height * 2) - (size * 2);
 		std::string floor_empty(dif > 0 ? dif / 2 : 0, FLOOR_VOID);
-		std::string floor_broken(size * 2, FLOOR_BROKEN);
 		std::string floor(size * 2, FLOOR_CORRECT);
 
 		// Allocated in the Heap cause of string size limitation on stack
@@ -204,6 +191,7 @@ namespace view {
 
 		delete oss;
 	}
+
 
 	// Display the next step of the algorithm if possible
 	void DisplayNextStep() {
@@ -216,6 +204,7 @@ namespace view {
 			general_error_message = "You are at the last step";
 		}
 	}
+
 
 	// Display the previous step of the algorithm if possible
 	void DisplayPreviousStep() {
@@ -230,41 +219,57 @@ namespace view {
 	}
 
 
-	/** ***************************************** User command *****************************************
-	 * @brief : Catch the character write by the user.
-	 * 
-	 */
-	void WaitForUserCommand() {
-		std::cout << "Algo: " << general_algo_message << "\n";
-		std::cout << "Error: " << general_error_message << "\n";
-		std::cout << "Press [space bar] to trigger auto-mode\n"
-			<< "Press [d] to move to the next step\n" 
-			<< "Press [a] to move to the previous step\n"
-			<< "Press [r] to restart" << std::endl;
+	// Auto mode to display the steps
+	void DisplayAutoMode() {
+		while (current_step < max_step) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(AUTO_MODE_SLEEP));
+			DisplayNextStep();
+		}
+		auto_mode = false;
+		WaitForUserCommand();
+	}
 
-		while (true) {
-			if (_kbhit()) {  // Check if a key has been pressed
-				char ch = _getch();  // Get the pressed key without waiting for Enter
-				if (ch == ' ') {
-					std::cout << "[space bar] pressed!" << std::endl;
-					auto_step = true;
-					break;
-				}
-				if (ch == 'a' && current_step > MIN_STEP) {
-					DisplayPreviousStep();
-					break;
-				}
-				if (ch == 'd' && current_step < max_step) {
-					DisplayNextStep();
-					break;
-				}
-				if (ch == 'r') {
-					ResetProgram();
-					StartProgram();
+
+	// Catch the character pressed by the user (don't need [Enter] key to be pressed)
+	void WaitForUserCommand() {
+		// Skip if in auto_mode
+		if (!auto_mode) {
+			std::cout << "Algo: " << general_algo_message << "\n";
+			std::cout << "Error: " << general_error_message << "\n";
+			std::cout << "Press [space bar] to trigger auto-mode\n"
+				<< "Press [d] to move to the next step\n" 
+				<< "Press [a] to move to the previous step\n"
+				<< "Press [r] to restart" << std::endl;
+
+			while (true) {
+				if (_kbhit()) {  // Check if a key has been pressed
+					char ch = _getch();  // Get the pressed key without waiting for Enter
+					// Auto-mode (space bar)
+					if (ch == ' ') {
+						auto_mode = true;
+						DisplayAutoMode();
+						break;
+					}
+					// Previous step if there is one
+					if (ch == 'a' && current_step > MIN_STEP) {
+						DisplayPreviousStep();
+						break;
+					}
+					// Next step if there is one
+					if (ch == 'd' && current_step < max_step) {
+						DisplayNextStep();
+						break;
+					}
+					// Reset
+					if (ch == 'r') {
+						ResetProgram();
+						StartProgram();
+					}
 				}
 			}
 		}
 	}
+
 
 	// Clear the console and add some space
 	void ClearDisplay(){
