@@ -24,7 +24,7 @@
     <ClCompile Include="User_Interaction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Tower_Connection.cpp">
+    <ClCompile Include="Towers_Interaction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BruteForce.cpp">
@@ -41,7 +41,7 @@
     <ClInclude Include="User_Interaction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Tower_Connection.h">
+    <ClInclude Include="Towers_Interaction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,17 +5,10 @@
  * @author ThJo
  * @date   12 June 2024
  *********************************************************************/
-#include <conio.h>
-
-
-#include "Tower.h"
-#include "Tower_Connection.h"
 #include "User_Interaction.h"
 
 namespace view {
 	// namespace used in this file
-	using logic::Tower;
-	using logic::TowersStep;
 	using logic::vec_steps;
 	using logic::first_tower_height;
 	using logic::NBR_TOWER;
@@ -23,26 +16,26 @@ namespace view {
 	using logic::MIN_TOWER_HIGH;
 	using logic::general_algo_message;
 	using logic::general_error_message;
-
+	using logic::Tower;
+	using logic::TowersStep;
 	using logic::AlgorithmStart;
 	using logic::SetUpTowers;
 
 	// Global variables
-	const char FLOOR_VOID{ '.' };
-	const char FLOOR_CORRECT{ '|' };
-	const int MIN_STEP{ 0 };
+	constexpr char FLOOR_VOID{ '.' };
+	constexpr char FLOOR_CORRECT{ '|' };
+	constexpr unsigned short int MIN_STEP{ 0 };
+	constexpr unsigned short int AUTO_MODE_SLEEP{ 25 }; // Milliseconds
 	bool auto_mode{ false };
-	long AUTO_MODE_SLEEP{ 100 }; // Milli-second
-	int current_step{ MIN_STEP };
-	int max_step{ 1 };
+	size_t current_step{ MIN_STEP };
+	size_t max_step{ 1 };
 
-	bool debug_mod{ false }; // DEBUG
-	int debug_mod_value{ 6 }; // DEBUG
+	bool debug_mod{ false };
 
 	// Function declaration
 	void ResetProgram();
 	void FirstTowerHigh();
-	void DisplayAllTowers(int step);
+	void DisplayAllTowers(size_t step);
 	void DisplayNextStep();
 	void DisplayPreviousStep();
 	void DisplayAutoMode();
@@ -86,7 +79,7 @@ namespace view {
 		ClearDisplay();
 		// Ask the user the height of the first tower he want
 		std::cout << "Choose the height of the first tower (" << MIN_TOWER_HIGH << " - " << MAX_TOWER_HIGH
-			<< ")\nor 0 for debug mod: ";
+			<< ")\nor [0] for DEBUG mod: ";
 
 		// Check if the user entry is numeric
 		while (!(std::cin >> first_tower_height)) {
@@ -95,11 +88,21 @@ namespace view {
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		}
 
-		// Change the height in case the user choice is to low or too high
-		if (first_tower_height == 0) { // DEBUG
+		// Ask the user to choose the number for the DEBUG mod
+		if (first_tower_height == 0) {
 			debug_mod = true;
-			first_tower_height = debug_mod_value;
+
+			// Ask the user the height of the first tower he want for DEBUG mod, there is no limitation
+			std::cout << "DEBUG mod => Choose the height of the first tower (no limitation): ";
+
+			// Check if the user entry is numeric
+			while (!(std::cin >> first_tower_height)) {
+				std::cout << "Invalid entry, choose a number: ";
+				std::cin.clear(); // Clear the flag 
+				std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			}
 		}
+		// Change the height in case the user choice is to low or too high
 		else if (first_tower_height < MIN_TOWER_HIGH) {
 			first_tower_height = MIN_TOWER_HIGH;
 		}
@@ -113,7 +116,7 @@ namespace view {
 
 	
 	// Create a 2D array with all data from the Tower objects and display it
-	void DisplayAllTowers(int step) {
+	void DisplayAllTowers(size_t step) {
 		// Clear the console if NOT in debug mode
 		if (!debug_mod) {
 			ClearDisplay();
@@ -130,11 +133,11 @@ namespace view {
 		std::memset(array_towers, 0, sizeof(array_towers));
 
 		// Populate the 2D array with Towers floors
-		int current_tower{ 0 }; // Tower ID
+		size_t current_tower{ 0 }; // Tower ID
 		for (const Tower& tower : towers_step.m_array_towers) {
-			int tower_size = tower.GetTowerSize();
-			int tower_floor{ 0 };
-			for (int floor = MAX_TOWER_HIGH - 1; floor > 0; floor--) {
+			size_t tower_size = tower.GetTowerSize();
+			size_t tower_floor{ 0 };
+			for (int floor = MAX_TOWER_HIGH - 1; floor >= 0; floor--) {
 				if (tower_floor < tower_size) {
 					array_towers[floor][current_tower] = tower.GetTowerFloor(tower_floor);
 					tower_floor++;
@@ -156,9 +159,9 @@ namespace view {
 
 	// Display the 2D array with some visual representation.
 	void DisplayVisualTowers(int array_towers[MAX_TOWER_HIGH][NBR_TOWER]) {
-		for (int i = 0; i < MAX_TOWER_HIGH; i++) {
+		for (size_t i = 0; i < MAX_TOWER_HIGH; i++) {
 			std::cout << "\t\t\t";
-			for (int j = 0; j < NBR_TOWER; ++j) {
+			for (size_t j = 0; j < NBR_TOWER; ++j) {
 				ConstructFloor(array_towers[i][j]);
 			}
 			std::cout << "\n";
@@ -168,9 +171,9 @@ namespace view {
 
 	// Display the 2D array with number only.
 	void DisplayDataTowers(int array_towers[MAX_TOWER_HIGH][NBR_TOWER]) {
-		for (int i = 0; i < MAX_TOWER_HIGH; i++) {
+		for (size_t i = 0; i < MAX_TOWER_HIGH; i++) {
 			std::cout << "\t\t\t";
-			for (int j = 0; j < NBR_TOWER; ++j) {
+			for (size_t j = 0; j < NBR_TOWER; ++j) {
 				std::cout << array_towers[i][j] << " ";
 			}
 			std::cout << "\n";
@@ -186,7 +189,7 @@ namespace view {
 
 		// Allocated in the Heap cause of string size limitation on stack
 		std::ostringstream* oss = new std::ostringstream;  
-		*oss << floor_empty<< floor << floor_empty<< " ";
+		*oss << floor_empty<< floor << floor_empty << " ";
 		std::cout << oss->str();
 
 		delete oss;
@@ -239,12 +242,12 @@ namespace view {
 			std::cout << "Press [space bar] to trigger auto-mode\n"
 				<< "Press [d] to move to the next step\n" 
 				<< "Press [a] to move to the previous step\n"
-				<< "Press [r] to restart" << std::endl;
+				<< "Press [r] to restart" << "\n";
 
 			while (true) {
 				if (_kbhit()) {  // Check if a key has been pressed
 					char ch = _getch();  // Get the pressed key without waiting for Enter
-					// Auto-mode (space bar)
+					// Auto-mode [space bar]
 					if (ch == ' ') {
 						auto_mode = true;
 						DisplayAutoMode();
@@ -264,6 +267,7 @@ namespace view {
 					if (ch == 'r') {
 						ResetProgram();
 						StartProgram();
+						break;
 					}
 				}
 			}
