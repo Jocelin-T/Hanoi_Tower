@@ -16,10 +16,10 @@
 
 namespace logic {
 	// Super Global variables
-	inline const int NBR_TOWER{ 3 };
-	inline const int MIN_TOWER_HIGH{ 3 };
-	inline const int MAX_TOWER_HIGH{ 10 };
-	inline int first_tower_height{ 0 };
+	inline constexpr unsigned short int NBR_TOWER{ 3 };
+	inline constexpr unsigned short int MIN_TOWER_HIGH{ 3 };
+	inline constexpr unsigned short int MAX_TOWER_HIGH{ 10 };
+	inline unsigned short int first_tower_height{ 0 };
 	inline std::string general_algo_message{ "" };
 	inline std::string general_error_message{ "" };
 	inline bool algorithm_done{ false };
@@ -43,7 +43,7 @@ namespace logic {
 	* @param value_t2 : int => Height of the 2nd Tower, default is {0}
 	* @param value_t3 : int => Height of the 3th Tower, default is {0}
 	*/
-	void SetUpTowers(const int value_t1, const int value_t2 = 0, const int value_t3 = 0);
+	void SetUpTowers(int value_t1, int value_t2 = 0, int value_t3 = 0);
 
 	/** ***************************************** Algorithm *****************************************
 	 * @brief : Algorithm for the Hanoi Towers.

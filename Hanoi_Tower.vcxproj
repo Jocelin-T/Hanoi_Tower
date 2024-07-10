@@ -132,13 +132,13 @@
     <ClCompile Include="BruteForce.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Tower.cpp" />
-    <ClCompile Include="Tower_Connection.cpp" />
+    <ClCompile Include="Towers_Interaction.cpp" />
     <ClCompile Include="User_Interaction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h" />
     <ClInclude Include="Tower.h" />
-    <ClInclude Include="Tower_Connection.h" />
+    <ClInclude Include="Towers_Interaction.h" />
     <ClInclude Include="User_Interaction.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

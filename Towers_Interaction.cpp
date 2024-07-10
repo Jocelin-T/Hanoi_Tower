@@ -1,25 +1,27 @@
 /*****************************************************************//**
- * @file   Tower_Connection.cpp
+ * @file   Towers_Interaction.cpp
  * @brief  This file will manage all interactions and logic between the Towers
  * 
  * @author ThJo
  * @date   17 June 2024
  *********************************************************************/
-#include "Tower_Connection.h"
+#include "Towers_Interaction.h"
 
 
 namespace logic {
 	// Global variable
-	const int START_STEP{ 1 };
-	const int MAX_STEP{ 1500 };
+	constexpr unsigned short int START_STEP{ 1 };
+	//constexpr unsigned int MAX_STEP{ 4294967295 }; // Max number a unsigned int can hold
+	constexpr unsigned int MAX_STEP{ 8830 }; // Max number of steps before crash
+	unsigned int algorithm_max_step_autorized;
 	const std::string TOWER_1_NAME{ "t1" };
 	const std::string TOWER_2_NAME{ "t2" };
 	const std::string TOWER_3_NAME{ "t3" };
 
-	int nbr_step{ START_STEP };
+	unsigned short int nbr_step{ START_STEP };
 	bool final_phase_start{ false };
 	bool algorithm_is_even{ false };
-	int elements_1_2_phase{ 1 };
+	unsigned short int elements_1_2_phase{ 1 };
 	bool ignore_phase_check{ false };
 
 
@@ -40,7 +42,7 @@ namespace logic {
 	void AlgorithmCheckNextPhase();
 	void AlgorithmCheckStepStatus(const Tower& to_tower);
 	Tower& FindTowerWithLowestElementAtTop();
-	Tower& FindElement(const int value);
+	Tower& FindElement(int value);
 
 	Tower& GetOtherTower(const Tower& tower_a, const Tower& tower_b);
 	void MoveFloorToTower(Tower& from_tower, Tower& to_tower, bool ignore_phase_check = false);
@@ -57,20 +59,24 @@ namespace logic {
 	Tower* p_last_move_elements_1_2 = nullptr;
 	Tower* p_before_last_move_elements_1_2 = nullptr;
 
-	// Initialization of ptr
+	// Initialization of Towers ref and ptr
 	Tower& tower_a{ t1 };
 	Tower* p_tower_b = nullptr;
 	Tower* p_tower_c = nullptr;
 
 
 	// Set up the 3 towers.
-	void SetUpTowers(const int value_t1, const int value_t2, const int value_t3) {
+	void SetUpTowers(int value_t1, int value_t2, int value_t3) {
 		ResetAlgorithm();
 
 		// Set the first tower using the parameter constructor
 		t1 = Tower(TOWER_1_NAME, value_t1);
 		t2 = Tower(TOWER_2_NAME, value_t2);
 		t3 = Tower(TOWER_3_NAME, value_t3);
+
+		// Dynamic set of the number of max step the algo should make + 1
+		//	Same has pow(2, first_tower_height)
+		algorithm_max_step_autorized = (1 << first_tower_height); 
 
 		// Creation of the first step
 		CreateAlgorithmFirstStep();
@@ -82,6 +88,7 @@ namespace logic {
 		nbr_step = START_STEP;
 		algorithm_done = false;
 		algorithm_is_even = false;
+		algorithm_max_step_autorized = 0;
 		final_phase_start = false;
 		ignore_phase_check = false;
 		elements_1_2_phase = 1;
@@ -130,7 +137,7 @@ namespace logic {
 
 	// ****** THE ALGORITHM ******
 	void AlgorithmStart() {
-		// Determine if the Tower is even or odd (check if the last bit is 1 or 0)
+		// Determine if the Tower is EVEN or ODD (check if the last bit is 1 or 0)
 		if (first_tower_height & 1) { // ODD
 			p_last_move_elements_1_2 = &t3;
 			LoopElements1And2();
@@ -190,7 +197,7 @@ namespace logic {
 			}
 
 			// Pass a value from a Tower to another Tower
-			int temp_value = from_tower.GetTopElement();
+			unsigned short int temp_value = from_tower.GetTopElement();
 			to_tower.AddTopElement(temp_value);
 			from_tower.RemoveTopElement();
 
@@ -331,7 +338,8 @@ namespace logic {
 	}
 
 
-	// Check if the T3 has break, has the correct result, has too much step
+	// Check if the T3 has break, has the correct result, has too much step 
+	//	and if the last element moved didn't break the stability of the receiving Tower
 	void AlgorithmCheckStepStatus(const Tower& to_tower) {
 
 		// Check if the receiving Tower break
@@ -349,10 +357,10 @@ namespace logic {
 			general_algo_message = oss.str();
 		}
 		// Check if the limit of step is complete
-		else if (nbr_step == MAX_STEP) {
+		else if (nbr_step == algorithm_max_step_autorized || nbr_step == MAX_STEP) {
 			algorithm_done = true;
 			std::ostringstream oss;
-			oss << "Algorithm max steps! (" << MAX_STEP << ")\n";
+			oss << "Algorithm max steps! (" << algorithm_max_step_autorized << ")\n";
 			general_algo_message = oss.str();
 		}
 		nbr_step++;
@@ -362,12 +370,12 @@ namespace logic {
 	// Find the Tower with the lowest element at is top, EXCLUDING (1) and (2)
 	Tower& FindTowerWithLowestElementAtTop() {
 
-		int min_element{ first_tower_height };
+		unsigned short int min_element{ first_tower_height };
 		Tower* min_tower = nullptr; // Pointer to the Tower with the lowest element
 
 		for (Tower& current_tower : array_obj_towers) {
 			if (!current_tower.IsTowerEmpty()) {
-				int current_element = current_tower.GetTopElement();
+				unsigned short int current_element = current_tower.GetTopElement();
 
 				if (current_element <= min_element 
 					&& current_element != 1
@@ -389,8 +397,8 @@ namespace logic {
 
 
 	// Find the Tower holding the given element
-	Tower& FindElement(const int value) {
-		int current_tower{ 0 };
+	Tower& FindElement(int value) {
+		size_t current_tower{ 0 }; // Tower ID
 		for (Tower& tower : array_obj_towers) {
 			if (tower.IsElementPresentInTower(value)) {
 				return array_obj_towers[current_tower];
